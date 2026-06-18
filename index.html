@@ -1,0 +1,527 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary)}
+#app{min-height:600px;padding:1rem}
+.screen{display:none}
+.screen.active{display:block}
+.btn{background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:10px 20px;font-size:15px;font-weight:500;cursor:pointer;color:var(--color-text-primary);transition:background 0.15s,transform 0.1s}
+.btn:hover{background:var(--color-background-tertiary)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:#7F77DD;border-color:#534AB7;color:#fff}
+.btn-primary:hover{background:#534AB7}
+.btn-danger{background:#D85A30;border-color:#993C1D;color:#fff}
+.btn-danger:hover{background:#993C1D}
+.btn-success{background:#1D9E75;border-color:#0F6E56;color:#fff}
+.btn-success:hover{background:#0F6E56}
+.input-field{width:100%;padding:10px 14px;font-size:16px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.progress-bar{width:100%;height:8px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:#7F77DD;transition:width 0.3s}
+.question-display{font-size:32px;font-weight:500;text-align:center;padding:1.5rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin:1rem 0;letter-spacing:1px}
+.answer-row{display:flex;gap:8px;margin:1rem 0}
+.answer-row input{flex:1}
+.feedback-msg{text-align:center;font-size:16px;padding:8px;border-radius:var(--border-radius-md);margin:8px 0;font-weight:500}
+.feedback-correct{background:#EAF3DE;color:#3B6D11}
+.feedback-wrong{background:#FCEBEB;color:#A32D2D}
+.timer-bar{width:100%;height:12px;background:var(--color-background-secondary);border-radius:6px;overflow:hidden;margin:8px 0}
+.timer-fill{height:100%;background:#1D9E75;transition:width 0.1s linear}
+.timer-fill.warn{background:#EF9F27}
+.timer-fill.danger{background:#E24B4A}
+.stage-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:1rem 0}
+.stage-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;text-align:center;cursor:pointer;transition:background 0.15s}
+.stage-card:hover{background:var(--color-background-tertiary)}
+.stage-card.locked{opacity:0.5;cursor:not-allowed}
+.stage-card.completed{border-color:#1D9E75;background:#EAF3DE}
+.stage-card.bonus{border-color:#EF9F27;background:#FAEEDA}
+.medal-display{font-size:64px;text-align:center;padding:1rem}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:1rem 0}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem;text-align:center}
+.stat-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:500}
+.hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.score-badge{background:#7F77DD;color:#fff;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:500}
+.confetti-wrap{position:relative;overflow:hidden}
+.strength-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:14px}
+.bar-mini{height:8px;border-radius:4px;flex:1;background:var(--color-background-secondary);overflow:hidden}
+.bar-mini-fill{height:100%;border-radius:4px}
+</style>
+
+<div id="app">
+<div id="screen-welcome" class="screen active">
+  <div style="text-align:center;padding:2rem 1rem">
+    <div style="font-size:56px;margin-bottom:0.5rem">🧮</div>
+    <h1 style="font-size:26px;font-weight:500;margin-bottom:0.5rem;color:#534AB7">Math Quest</h1>
+    <p style="color:var(--color-text-secondary);font-size:15px;margin-bottom:2rem">Multiplication &amp; Division Adventure for Grades 4-6</p>
+    <div class="card" style="max-width:360px;margin:0 auto">
+      <label style="font-size:14px;color:var(--color-text-secondary);display:block;margin-bottom:8px">What's your name, explorer?</label>
+      <input id="username-input" class="input-field" type="text" placeholder="Enter your name..." maxlength="20" style="margin-bottom:1rem">
+      <button class="btn btn-primary" style="width:100%;font-size:16px;padding:12px" onclick="startGame()">Start Adventure! 🚀</button>
+    </div>
+    <div style="margin-top:1.5rem;font-size:13px;color:var(--color-text-secondary)">
+      <p>3 stages + bonus rounds &nbsp;|&nbsp; Earn medals &nbsp;|&nbsp; Track your progress</p>
+    </div>
+  </div>
+</div>
+
+<div id="screen-hub" class="screen">
+  <div class="hdr">
+    <div>
+      <span style="font-weight:500" id="hub-name">Explorer</span>
+      <span style="font-size:13px;color:var(--color-text-secondary);margin-left:6px">on a math quest!</span>
+    </div>
+    <div class="score-badge">⭐ <span id="hub-score">0</span> pts</div>
+  </div>
+  <div style="margin-bottom:1rem">
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:4px">Overall progress</div>
+    <div class="progress-bar"><div class="progress-fill" id="hub-progress" style="width:0%"></div></div>
+  </div>
+  <h2 style="font-size:16px;font-weight:500;margin-bottom:0.75rem">Choose your challenge:</h2>
+  <div class="stage-grid" id="stage-grid"></div>
+  <div style="margin-top:1rem;text-align:center">
+    <button class="btn btn-danger" onclick="showSummary()">📊 View My Summary</button>
+  </div>
+</div>
+
+<div id="screen-quiz" class="screen">
+  <div class="hdr">
+    <div>
+      <span style="font-size:13px;color:var(--color-text-secondary)" id="quiz-stage-label">Stage 1</span><br>
+      <span style="font-weight:500;font-size:15px" id="quiz-q-label">Question 1/10</span>
+    </div>
+    <div class="score-badge">⭐ <span id="quiz-score">0</span> pts</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="quiz-progress" style="width:0%"></div></div>
+  <div id="timer-wrap" style="display:none">
+    <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">
+      <span style="color:var(--color-text-secondary)">Time remaining</span>
+      <span id="timer-text" style="font-weight:500">30s</span>
+    </div>
+    <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+  </div>
+  <div class="question-display" id="question-display">? × ? = ?</div>
+  <div class="answer-row">
+    <input id="answer-input" class="input-field" type="number" placeholder="Your answer..." style="font-size:18px;text-align:center">
+    <button class="btn btn-primary" style="min-width:90px" onclick="submitAnswer()">Check ✓</button>
+  </div>
+  <div id="feedback-area" style="min-height:48px"></div>
+  <div style="text-align:center;margin-top:0.5rem">
+    <button class="btn" onclick="goHub()" style="font-size:13px">← Back to hub</button>
+  </div>
+</div>
+
+<div id="screen-summary" class="screen">
+  <div class="hdr">
+    <h2 style="font-size:18px;font-weight:500">Your Report Card</h2>
+    <button class="btn btn-primary" onclick="goHub()">Back to hub</button>
+  </div>
+  <div id="medal-area" class="medal-display"></div>
+  <div id="summary-msg" style="text-align:center;font-size:16px;margin-bottom:1rem;padding:1rem;border-radius:var(--border-radius-md)"></div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total points</div><div class="stat-val" id="sum-pts">0</div></div>
+    <div class="stat-card"><div class="stat-label">Questions</div><div class="stat-val" id="sum-q">0</div></div>
+    <div class="stat-card"><div class="stat-label">Accuracy</div><div class="stat-val" id="sum-acc">0%</div></div>
+  </div>
+  <h3 style="font-size:15px;font-weight:500;margin:1rem 0 0.5rem">Stage-by-stage breakdown:</h3>
+  <div id="breakdown-list"></div>
+  <div style="margin-top:1rem;text-align:center;display:flex;gap:10px;justify-content:center">
+    <button class="btn btn-success" onclick="goHub()">Keep playing 🎮</button>
+    <button class="btn btn-primary" onclick="restartGame()">New game 🔄</button>
+  </div>
+</div>
+</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+function getCtx(){if(!ctx)ctx=new AudioCtx();return ctx;}
+
+function playTone(freq,dur,type='sine',vol=0.3){
+  try{
+    const a=getCtx(),o=a.createOscillator(),g=a.createGain();
+    o.connect(g);g.connect(a.destination);
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+dur);
+    o.start();o.stop(a.currentTime+dur);
+  }catch(e){}
+}
+function playCorrect(){playTone(523,0.1);setTimeout(()=>playTone(659,0.1),100);setTimeout(()=>playTone(784,0.2),200);}
+function playWrong(){playTone(200,0.3,'sawtooth',0.2);}
+function playBonus(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,0.15),i*100));}
+function playCelebrate(){
+  [523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>playTone(f,0.2),i*80));
+  setTimeout(()=>[1047,784,659,523].forEach((f,i)=>setTimeout(()=>playTone(f,0.2),i*80)),600);
+}
+function playMedal(){[784,880,988,1047,1175,1319].forEach((f,i)=>setTimeout(()=>playTone(f,0.25),i*100));}
+function playTryAgain(){[400,350,300,250].forEach((f,i)=>setTimeout(()=>playTone(f,0.2,'triangle'),i*120));}
+function playTick(){playTone(800,0.05,'square',0.1);}
+function playTimeout(){playTone(150,0.5,'sawtooth',0.3);}
+function playTimerWarn(){playTone(440,0.15,'triangle',0.15);}
+
+const STAGES = [
+  {id:'s1-2',label:'Stage 1\n× Table of 2',type:'mult_table',table:2,items:10,pts:10,bonus:false},
+  {id:'s1-3',label:'Stage 1\n× Table of 3',type:'mult_table',table:3,items:10,pts:10,bonus:false},
+  {id:'s1-4',label:'Stage 1\n× Table of 4',type:'mult_table',table:4,items:10,pts:10,bonus:false},
+  {id:'s1-5',label:'Stage 1\n× Table of 5',type:'mult_table',table:5,items:10,pts:10,bonus:false},
+  {id:'s1-6',label:'Stage 1\n× Table of 6',type:'mult_table',table:6,items:10,pts:10,bonus:false},
+  {id:'s1-7',label:'Stage 1\n× Table of 7',type:'mult_table',table:7,items:10,pts:10,bonus:false},
+  {id:'s1-8',label:'Stage 1\n× Table of 8',type:'mult_table',table:8,items:10,pts:10,bonus:false},
+  {id:'s1-9',label:'Stage 1\n× Table of 9',type:'mult_table',table:9,items:10,pts:10,bonus:false},
+  {id:'s1-10',label:'Stage 1\n× Table of 10',type:'mult_table',table:10,items:10,pts:10,bonus:false},
+  {id:'s1-11',label:'Stage 1\n× Table of 11',type:'mult_table',table:11,items:10,pts:10,bonus:false},
+  {id:'s1-12',label:'Stage 1\n× Table of 12',type:'mult_table',table:12,items:10,pts:10,bonus:false},
+  {id:'s1-13',label:'Stage 1\n× Table of 13',type:'mult_table',table:13,items:10,pts:10,bonus:false},
+  {id:'s1-14',label:'Stage 1\n× Table of 14',type:'mult_table',table:14,items:10,pts:10,bonus:false},
+  {id:'s1-15',label:'Stage 1\n× Table of 15',type:'mult_table',table:15,items:10,pts:10,bonus:false},
+  {id:'s1-bonus',label:'⚡ Bonus 1\nTimed Tables',type:'bonus_mult_table',items:10,pts:25,timed:30,bonus:true},
+  {id:'s2-a',label:'Stage 2\n2×1 digit',type:'mult_2x1',items:10,pts:15,bonus:false},
+  {id:'s2-b',label:'Stage 2\n2×2 digits',type:'mult_2x2',items:10,pts:20,bonus:false},
+  {id:'s2-c',label:'Stage 2\n3×2 digits',type:'mult_3x2',items:10,pts:25,bonus:false},
+  {id:'s2-bonus',label:'⚡ Bonus 2\nTimed Multiply',type:'bonus_mult',items:10,pts:35,timed:40,bonus:true},
+  {id:'s3-a',label:'Stage 3\n÷ 1-digit',type:'div_1',items:10,pts:15,bonus:false},
+  {id:'s3-b',label:'Stage 3\n÷ 2-digit',type:'div_2',items:10,pts:20,bonus:false},
+  {id:'s3-c',label:'Stage 3\n3-digit ÷',type:'div_3',items:10,pts:25,bonus:false},
+  {id:'s3-bonus',label:'⚡ Bonus 3\nTimed Division',type:'bonus_div',items:10,pts:35,timed:40,bonus:true},
+];
+
+let state = {
+  name:'Explorer',
+  score:0,
+  completed:{},
+  stageScores:{},
+  currentStage:null,
+  questions:[],
+  qi:0,
+  correct:0,
+  total:0,
+  answers:[],
+  timerInt:null,
+  timeLeft:0,
+  maxTime:30,
+};
+
+function r(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+function genQuestions(stage){
+  const qs=[];
+  for(let i=0;i<stage.items;i++){
+    let q;
+    if(stage.type==='mult_table'){
+      const a=stage.table,b=r(1,12);
+      q={text:`${a} × ${b} = ?`,ans:a*b,display:`${a} × ${b}`};
+    } else if(stage.type==='bonus_mult_table'){
+      const t=r(2,15),b=r(1,12);
+      q={text:`${t} × ${b} = ?`,ans:t*b,display:`${t} × ${b}`};
+    } else if(stage.type==='mult_2x1'){
+      const a=r(10,99),b=r(2,9);
+      q={text:`${a} × ${b} = ?`,ans:a*b,display:`${a} × ${b}`};
+    } else if(stage.type==='mult_2x2'){
+      const a=r(10,99),b=r(10,99);
+      q={text:`${a} × ${b} = ?`,ans:a*b,display:`${a} × ${b}`};
+    } else if(stage.type==='mult_3x2'){
+      const a=r(100,999),b=r(10,99);
+      q={text:`${a} × ${b} = ?`,ans:a*b,display:`${a} × ${b}`};
+    } else if(stage.type==='bonus_mult'){
+      const pick=r(0,2);
+      let a,b;
+      if(pick===0){a=r(10,99);b=r(2,9);}
+      else if(pick===1){a=r(10,99);b=r(10,99);}
+      else{a=r(100,999);b=r(10,99);}
+      q={text:`${a} × ${b} = ?`,ans:a*b,display:`${a} × ${b}`};
+    } else if(stage.type==='div_1'){
+      const b=r(2,9),ans=r(1,12);
+      const a=b*ans;
+      q={text:`${a} ÷ ${b} = ?`,ans:ans,display:`${a} ÷ ${b}`};
+    } else if(stage.type==='div_2'){
+      const b=r(10,25),ans=r(2,9);
+      const a=b*ans;
+      q={text:`${a} ÷ ${b} = ?`,ans:ans,display:`${a} ÷ ${b}`};
+    } else if(stage.type==='div_3'){
+      const b=r(2,12),ans=r(10,99);
+      const a=b*ans;
+      q={text:`${a} ÷ ${b} = ?`,ans:ans,display:`${a} ÷ ${b}`};
+    } else if(stage.type==='bonus_div'){
+      const pick=r(0,2);
+      let b,ans,a;
+      if(pick===0){b=r(2,9);ans=r(1,12);}
+      else if(pick===1){b=r(10,25);ans=r(2,9);}
+      else{b=r(2,12);ans=r(10,99);}
+      a=b*ans;
+      q={text:`${a} ÷ ${b} = ?`,ans:ans,display:`${a} ÷ ${b}`};
+    }
+    qs.push(q);
+  }
+  return qs;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function startGame(){
+  const n=document.getElementById('username-input').value.trim();
+  if(!n){document.getElementById('username-input').focus();return;}
+  state.name=n;
+  renderHub();
+  showScreen('hub');
+}
+
+function renderHub(){
+  document.getElementById('hub-name').textContent=state.name;
+  document.getElementById('hub-score').textContent=state.score;
+  const total=STAGES.length;
+  const done=Object.keys(state.completed).length;
+  document.getElementById('hub-progress').style.width=(done/total*100)+'%';
+  const grid=document.getElementById('stage-grid');
+  grid.innerHTML='';
+
+  STAGES.forEach((st,idx)=>{
+    const isBonus=st.bonus;
+    const isDone=state.completed[st.id];
+    const isLocked=isStgLocked(idx);
+    const div=document.createElement('div');
+    div.className='stage-card'+(isDone?' completed':'')+(isBonus?' bonus':'')+(isLocked&&!isDone?' locked':'');
+    const lines=st.label.split('\n');
+    div.innerHTML=`<div style="font-size:11px;color:var(--color-text-secondary)">${lines[0]}</div>
+      <div style="font-weight:500;font-size:13px;margin:4px 0">${lines[1]}</div>
+      <div style="font-size:11px;color:${isBonus?'#BA7517':'var(--color-text-secondary)'}">+${st.pts} pts/q</div>
+      ${isDone?'<div style="font-size:16px;margin-top:4px">✅</div>':''}
+      ${isBonus&&!isDone?'<div style="font-size:14px;margin-top:4px">⚡</div>':''}`;
+    if(!isLocked||isDone){
+      div.onclick=()=>startStage(st);
+    }
+    grid.appendChild(div);
+  });
+}
+
+function isStgLocked(idx){
+  if(idx===0)return false;
+  const prevId=STAGES[idx-1].id;
+  if(STAGES[idx].bonus){
+    const bonusGroupStart=idx-1;
+    for(let i=Math.max(0,idx-5);i<idx;i++){
+      if(!STAGES[i].bonus&&!state.completed[STAGES[i].id])return true;
+    }
+    return false;
+  }
+  return !state.completed[prevId]&&idx>0&&!STAGES[idx-1].bonus;
+}
+
+function startStage(stage){
+  state.currentStage=stage;
+  state.questions=genQuestions(stage);
+  state.qi=0;
+  state.correct=0;
+  state.total=0;
+  state.answers=[];
+  document.getElementById('quiz-stage-label').textContent=stage.label.replace('\n',' — ');
+  document.getElementById('quiz-score').textContent=state.score;
+  clearInterval(state.timerInt);
+  showScreen('quiz');
+  loadQuestion();
+}
+
+function loadQuestion(){
+  const q=state.questions[state.qi];
+  const stage=state.currentStage;
+  document.getElementById('quiz-q-label').textContent=`Question ${state.qi+1}/${stage.items}`;
+  document.getElementById('quiz-progress').style.width=((state.qi/stage.items)*100)+'%';
+  document.getElementById('question-display').textContent=q.display;
+  document.getElementById('answer-input').value='';
+  document.getElementById('feedback-area').innerHTML='';
+  document.getElementById('answer-input').focus();
+  if(stage.timed){
+    document.getElementById('timer-wrap').style.display='block';
+    state.maxTime=stage.timed;
+    state.timeLeft=stage.timed;
+    updateTimerUI();
+    state.timerInt=setInterval(()=>{
+      state.timeLeft--;
+      updateTimerUI();
+      if(state.timeLeft<=5)playTimerWarn();
+      if(state.timeLeft<=0){
+        clearInterval(state.timerInt);
+        handleTimeout();
+      }
+    },1000);
+  } else {
+    document.getElementById('timer-wrap').style.display='none';
+  }
+}
+
+function updateTimerUI(){
+  const pct=(state.timeLeft/state.maxTime)*100;
+  const fill=document.getElementById('timer-fill');
+  fill.style.width=pct+'%';
+  fill.className='timer-fill'+(pct<30?' danger':pct<50?' warn':'');
+  document.getElementById('timer-text').textContent=state.timeLeft+'s';
+}
+
+function handleTimeout(){
+  playTimeout();
+  const q=state.questions[state.qi];
+  showFeedback(false,`⏰ Time's up! Answer: ${q.ans}`);
+  state.answers.push({correct:false,question:q,given:null,timeout:true});
+  state.total++;
+  setTimeout(()=>nextQuestion(),2000);
+}
+
+function submitAnswer(){
+  const val=document.getElementById('answer-input').value.trim();
+  if(val==='')return;
+  clearInterval(state.timerInt);
+  const q=state.questions[state.qi];
+  const given=parseInt(val);
+  const isCorrect=given===q.ans;
+  state.total++;
+  state.answers.push({correct:isCorrect,question:q,given:given});
+  if(isCorrect){
+    state.correct++;
+    const pts=state.currentStage.pts;
+    state.score+=pts;
+    document.getElementById('quiz-score').textContent=state.score;
+    if(state.currentStage.timed&&state.timeLeft>0){
+      const bonus=Math.floor(state.timeLeft/5);
+      if(bonus>0){state.score+=bonus;document.getElementById('quiz-score').textContent=state.score;}
+    }
+    playCorrect();
+    showFeedback(true,`✅ Correct! +${pts} points`+(state.currentStage.timed?` (+ time bonus!)`:``));
+  } else {
+    playWrong();
+    showFeedback(false,`❌ Not quite. The answer is ${q.ans}`);
+  }
+  setTimeout(()=>nextQuestion(),1800);
+}
+
+function showFeedback(ok,msg){
+  const el=document.getElementById('feedback-area');
+  el.innerHTML=`<div class="feedback-msg ${ok?'feedback-correct':'feedback-wrong'}">${msg}</div>`;
+}
+
+function nextQuestion(){
+  state.qi++;
+  if(state.qi>=state.currentStage.items){
+    finishStage();
+  } else {
+    loadQuestion();
+  }
+}
+
+function finishStage(){
+  clearInterval(state.timerInt);
+  const stage=state.currentStage;
+  const pct=Math.round(state.correct/state.total*100);
+  const prev=state.stageScores[stage.id];
+  state.stageScores[stage.id]={correct:state.correct,total:state.total,pct};
+  if(!prev||prev.pct<pct)state.completed[stage.id]=true;
+
+  const isPerfect=state.correct===state.total;
+  let msg,celebType;
+  if(isPerfect){msg='🎉 Perfect score! Amazing!';celebType='perfect';}
+  else if(pct>=80){msg='🌟 Great job! Keep it up!';celebType='great';}
+  else if(pct>=60){msg='👍 Good effort!';celebType='good';}
+  else{msg='💪 Keep practicing, you can do it!';celebType='try';}
+
+  if(celebType==='perfect'){playMedal();}
+  else if(celebType==='great'||celebType==='good'){playCelebrate();}
+  else{playTryAgain();}
+
+  const medal=isPerfect?'🥇':pct>=80?'🥈':pct>=60?'🥉':'📚';
+  showStageResult(stage,pct,medal,msg,celebType);
+}
+
+function showStageResult(stage,pct,medal,msg,celebType){
+  document.getElementById('quiz-progress').style.width='100%';
+  document.getElementById('feedback-area').innerHTML=`
+    <div style="text-align:center;padding:1.5rem;border-radius:var(--border-radius-lg);background:var(--color-background-secondary);margin:1rem 0">
+      <div style="font-size:52px;margin-bottom:0.5rem">${medal}</div>
+      <div style="font-size:20px;font-weight:500;margin-bottom:0.5rem">${msg}</div>
+      <div style="font-size:16px;color:var(--color-text-secondary);margin-bottom:0.5rem">${state.correct} / ${state.total} correct — ${pct}%</div>
+      ${celebType==='perfect'?'<div style="font-size:14px;color:#0F6E56;font-weight:500">🏆 Perfect Score Medal Earned!</div>':''}
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:1.25rem">
+        <button class="btn btn-success" onclick="goHub()">Back to hub</button>
+        <button class="btn btn-primary" onclick="startStage(state.currentStage)">Try again 🔄</button>
+      </div>
+    </div>`;
+  document.getElementById('question-display').style.display='none';
+  document.getElementById('answer-row') && (document.querySelector('.answer-row').style.display='none');
+  document.querySelector('.answer-row').style.display='none';
+  renderHub();
+}
+
+function goHub(){
+  clearInterval(state.timerInt);
+  document.getElementById('question-display').style.display='block';
+  document.querySelector('.answer-row').style.display='flex';
+  renderHub();
+  showScreen('hub');
+}
+
+function showSummary(){
+  const allCorrect=Object.values(state.stageScores).reduce((s,v)=>s+v.correct,0);
+  const allTotal=Object.values(state.stageScores).reduce((s,v)=>s+v.total,0);
+  const acc=allTotal>0?Math.round(allCorrect/allTotal*100):0;
+  document.getElementById('sum-pts').textContent=state.score;
+  document.getElementById('sum-q').textContent=allTotal;
+  document.getElementById('sum-acc').textContent=acc+'%';
+
+  const medal=acc>=90?'🥇':acc>=75?'🥈':acc>=55?'🥉':'📚';
+  document.getElementById('medal-area').textContent=medal;
+
+  let msgTxt,msgBg,msgColor;
+  if(acc>=90){msgTxt=`🎉 Incredible, ${state.name}! You're a Math Champion!`;msgBg='#EAF3DE';msgColor='#3B6D11';playCelebrate();}
+  else if(acc>=75){msgTxt=`🌟 Well done, ${state.name}! You're a Math Star!`;msgBg='#E6F1FB';msgColor='#185FA5';playCelebrate();}
+  else if(acc>=55){msgTxt=`👍 Good work, ${state.name}! Keep practicing!`;msgBg='#FAEEDA';msgColor='#854F0B';}
+  else{msgTxt=`💪 Don't give up, ${state.name}! Practice makes perfect!`;msgBg='#FCEBEB';msgColor='#A32D2D';playTryAgain();}
+
+  const smsg=document.getElementById('summary-msg');
+  smsg.textContent=msgTxt;smsg.style.background=msgBg;smsg.style.color=msgColor;
+
+  const breakdownEl=document.getElementById('breakdown-list');
+  breakdownEl.innerHTML='';
+  const groups=[
+    {label:'Stage 1 — Multiplication Tables',ids:STAGES.filter(s=>s.type.startsWith('mult_table')).map(s=>s.id)},
+    {label:'Stage 1 — Bonus Timed Tables',ids:['s1-bonus']},
+    {label:'Stage 2 — Long Multiplication',ids:['s2-a','s2-b','s2-c']},
+    {label:'Stage 2 — Bonus',ids:['s2-bonus']},
+    {label:'Stage 3 — Long Division',ids:['s3-a','s3-b','s3-c']},
+    {label:'Stage 3 — Bonus',ids:['s3-bonus']},
+  ];
+  groups.forEach(g=>{
+    const played=g.ids.filter(id=>state.stageScores[id]);
+    if(!played.length)return;
+    const tot=played.reduce((s,id)=>s+state.stageScores[id].total,0);
+    const cor=played.reduce((s,id)=>s+state.stageScores[id].correct,0);
+    const p=Math.round(cor/tot*100);
+    const color=p>=80?'#1D9E75':p>=60?'#EF9F27':'#E24B4A';
+    const icon=p>=80?'💪':p>=60?'📈':'🎯';
+    const tip=p>=80?'Strength!':p>=60?'Getting there!':'Needs practice';
+    breakdownEl.innerHTML+=`<div class="strength-item">
+      <span style="font-size:16px">${icon}</span>
+      <span style="flex:2;font-size:13px">${g.label}</span>
+      <div class="bar-mini"><div class="bar-mini-fill" style="width:${p}%;background:${color}"></div></div>
+      <span style="font-size:12px;min-width:30px;text-align:right;color:${color}">${p}%</span>
+      <span style="font-size:11px;color:var(--color-text-secondary);min-width:70px">${tip}</span>
+    </div>`;
+  });
+  if(!allTotal)breakdownEl.innerHTML='<p style="color:var(--color-text-secondary);font-size:14px;padding:1rem 0">Complete some stages first!</p>';
+  showScreen('summary');
+}
+
+function restartGame(){
+  state.score=0;state.completed={};state.stageScores={};
+  state.questions=[];state.qi=0;state.correct=0;state.total=0;
+  clearInterval(state.timerInt);
+  renderHub();
+  showScreen('hub');
+}
+
+document.getElementById('answer-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter')submitAnswer();
+});
+document.getElementById('username-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter')startGame();
+});
+</script>
